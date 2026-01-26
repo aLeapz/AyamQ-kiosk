@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="horizontal"
+    android:background="#F5F5F5"
+    tools:context=".ui.MainActivity">
+
+    <!-- LEFT SIDEBAR -->
+    <LinearLayout
+        android:id="@+id/sidebar"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:background="#2C3E50"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Logo -->
+        <TextView
+            android:id="@+id/tv_logo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AyamQ"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:layout_marginBottom="32dp"
+            tools:ignore="HardcodedText" />
+
+        <!-- Category Buttons -->
+        <Button
+            android:id="@+id/btn_category_paket"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#34495E"
+            android:padding="16dp"
+            android:text="PAKET"
+            android:textSize="16sp"
+            tools:ignore="DuplicateSpeakableTextCheck,HardcodedText" />
+
+        <Button
+            android:id="@+id/btn_category_ala_carte"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ALA CARTE"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#34495E"
+            style="@style/Widget.MaterialComponents.Button"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btn_category_sauce"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SAUCE"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#34495E"
+            style="@style/Widget.MaterialComponents.Button"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btn_category_drink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="DRINK"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:backgroundTint="#34495E"
+            style="@style/Widget.MaterialComponents.Button"
+            tools:ignore="HardcodedText" />
+
+        <!-- Spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <!-- Admin Icon -->
+        <ImageButton
+            android:id="@+id/btn_admin"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:contentDescription="Admin Access"
+            android:tint="#FFFFFF"
+            tools:ignore="HardcodedText,UseAppTint" />
+
+    </LinearLayout>
+
+    <!-- MAIN CONTENT AREA (Menu Grid) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Category Title -->
+        <TextView
+            android:id="@+id/tv_category_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PAKET"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#2C3E50"
+            android:layout_marginBottom="16dp"
+            tools:ignore="HardcodedText" />
+
+        <!-- Menu Grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_menu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp"
+            tools:listitem="@layout/item_menu"/>
+
+    </LinearLayout>
+
+    <!-- RIGHT PANEL (Cart) -->
+    <LinearLayout
+        android:id="@+id/cart_panel"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        tools:ignore="TextSizeCheck">
+
+        <!-- Cart Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Pesanan Anda"
+            android:textColor="#2C3E50"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <!-- Cart Items List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_cart"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            tools:listitem="@layout/item_cart" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="16dp"
+            android:background="#E0E0E0" />
+
+        <!-- Total Price -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Total"
+                android:textColor="#2C3E50"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tv_total_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp 0"
+                android:textColor="#E74C3C"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+
+        <!-- Order Button -->
+        <Button
+            android:id="@+id/btn_order_now"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:backgroundTint="#E74C3C"
+            android:text="Pesan Sekarang"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+
+</LinearLayout>

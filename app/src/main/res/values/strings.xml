@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AyamQ</string>
+    <string name="category_paket">PAKET</string>
+    <string name="category_ala_carte">ALA CARTE</string>
+    <string name="category_sauce">SAUCE</string>
+    <string name="category_drink">DRINK</string>
+    <string name="add_to_cart">Tambah</string>
+    <string name="order_now">Pesan Sekarang</string>
+    <string name="your_order">Pesanan Anda</string>
+    <string name="total">Total</string>
+    <string name="admin_access">Admin Access</string>
+    <string name="enter_pin">Enter 4-digit PIN</string>
+    <string name="incorrect_pin">Incorrect PIN</string>
+    <string name="order_success">Order placed successfully!</string>
+    <string name="cart_empty">Cart is empty</string>
+    <string name="delete_menu_confirm">Delete this menu item?</string>
+    <string name="add_menu">Add Menu Item</string>
+    <string name="menu_name">Menu Name</string>
+    <string name="menu_price">Price</string>
+    <string name="select_category">Select Category</string>
+</resources>
