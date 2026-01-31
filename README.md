@@ -80,7 +80,7 @@ Aplikasi ini dikembangkan sebagai proyek akhir mata kuliah Pemrograman Bergerak 
 
 1. Clone repository ini ke dalam Android Studio.  
 2. Sync project dan pastikan semua dependency terunduh dengan benar.  
-3. Jalankan aplikasi pada emulator atau perangkat Android fisik (min. API level 21).  
+3. Jalankan aplikasi pada emulator Android Tablet atau perangkat Android Tablet fisik (min. API level 21).  
 4. Akses Menu Admin untuk:  
    - Mengelola data menu (tambah, edit, hapus).  
    - Import data menu dari file JSON.  
@@ -92,7 +92,7 @@ Aplikasi ini dikembangkan sebagai proyek akhir mata kuliah Pemrograman Bergerak 
 
 ## Demo Video
 
-**Work in Progress**
+[![Demo Aplikasi AyamQ](https://img.youtube.com/vi/oXRepvrc7EY/maxresdefault.jpg)](https://www.youtube.com/watch?v=ID_oXRepvrc7EY)
 
 _Tonton demo video aplikasi AyamQ Kiosk di YouTube untuk melihat fitur dan cara kerja aplikasi secara langsung._
 
