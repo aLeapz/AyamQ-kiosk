@@ -22,6 +22,7 @@ import android.graphics.Typeface
 import com.ayamq.kiosk.R
 import com.ayamq.kiosk.broadcast.OrderStatusReceiver
 import com.ayamq.kiosk.data.database.entity.MenuEntity
+import com.ayamq.kiosk.data.database.entity.OrderEntity
 import com.ayamq.kiosk.model.Category
 import com.ayamq.kiosk.scheduler.BackupScheduler
 import com.ayamq.kiosk.scheduler.OrderCheckAlarmReceiver
@@ -962,6 +963,36 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Checks for the backup file and shows a confirmation dialog before importing the menu.
+     */
+    private fun showImportMenuFromJSON() {
+        val backupFile = File(filesDir, "menu_backup.json")
+
+        // First, check if the backup file actually exists.
+        if (!backupFile.exists()) {
+            Toast.makeText(
+                this,
+                "'menu_backup.json' tidak ditemukan",
+                Toast.LENGTH_LONG
+            ).show()
+            return // Stop if no file is found.
+        }
+
+        // If the file exists, show the confirmation dialog.
+        AlertDialog.Builder(this)
+            .setTitle("Konfirmasi Import Menu")
+            .setMessage(
+                "Anda yakin ingin import menu dari 'menu_backup.json'?\n\n" +
+                        "⚠️ SEMUA menu yang ada saat ini akan DIHAPUS dan digantikan dengan data dari backup."
+            )
+            .setPositiveButton("Import") { _, _ ->
+                // If the user confirms, call the function that does the actual work.
+                importMenuFromJson()
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
 
     /**
      * Import Menu Items from JSON
@@ -970,15 +1001,6 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val file = File(filesDir, "menu_backup.json")
-
-                if (!file.exists()) {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "menu_backup.json tidak ditemukan",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@launch
-                }
 
                 val json = withContext(Dispatchers.IO) {
                     file.readText()
@@ -1014,7 +1036,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
     /**
      * Show dialog to add new menu item
@@ -1066,7 +1087,7 @@ class MainActivity : AppCompatActivity() {
             setBackgroundColor(Color.TRANSPARENT)
             contentDescription = "Import Menu from JSON"
             setOnClickListener {
-                importMenuFromJson()
+                showImportMenuFromJSON()
             }
         }
 
@@ -1111,52 +1132,36 @@ class MainActivity : AppCompatActivity() {
      */
     @SuppressLint("SetTextI18n")
     private fun showOrdersDialog() {
-        // Header layout (Title + Trash Button)
-        val headerLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            setPadding(24, 24, 24, 16)
-            gravity = Gravity.CENTER_VERTICAL
-        }
+        val options = arrayOf(
+            "View Pending Orders",
+            "View Orders History"
+        )
 
-// Title
-        headerLayout.addView(TextView(this).apply {
-            text = "Pending Orders"
-            textSize = 20f
-            setTypeface(null, Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                1f
-            )
-        })
-
-// Trash button
-        headerLayout.addView(ImageButton(this).apply {
-            setImageResource(android.R.drawable.ic_menu_delete)
-            setBackgroundColor(Color.TRANSPARENT)
-            contentDescription = "Delete all orders"
-            setOnClickListener {
-                showDeleteAllOrdersDialog()
+        AlertDialog.Builder(this)
+            .setTitle("Orders")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> showPendingOrdersDialog()
+                    1 -> showOrdersHistoryDialog()
+                }
             }
-        })
+            .setNegativeButton("Close", null)
+            .show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showPendingOrdersDialog() {
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(24, 24, 24, 24)
         }
 
-        val scrollView = ScrollView(this).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                600
-            )
-        }
-
+        val scrollView = ScrollView(this)
         val ordersLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
 
-        // Observe orders
         orderViewModel.pendingOrders.observe(this) { orders ->
             ordersLayout.removeAllViews()
 
@@ -1172,127 +1177,44 @@ class MainActivity : AppCompatActivity() {
                         orientation = LinearLayout.VERTICAL
                         setPadding(16, 16, 16, 16)
                         setBackgroundColor(resources.getColor(R.color.background, theme))
-                        layoutParams = LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT
-                        ).apply {
-                            setMargins(0, 0, 0, 12)
-                        }
                     }
 
-                    // Order number (Queue number)
                     orderView.addView(TextView(this).apply {
                         text = "Order #${order.queueNumber}"
-                        textSize = 20f
-                        setTypeface(null, Typeface.BOLD)
-                        setTextColor(resources.getColor(R.color.primary_dark, theme))
-                    })
-
-                    // Timestamp
-                    orderView.addView(TextView(this).apply {
-                        text = FormatUtils.formatDateTime(order.timestamp)
-                        textSize = 13f
-                        setTextColor(resources.getColor(R.color.text_secondary, theme))
-                        setPadding(0, 4, 0, 8)
-                    })
-
-                    // Get order items
-                    orderViewModel.getOrderItems(order.orderId).observe(this) { orderItems ->
-                        // Remove previous items view if exists
-                        val itemsContainer = orderView.findViewWithTag<LinearLayout>("items_${order.orderId}")
-                        if (itemsContainer != null) {
-                            orderView.removeView(itemsContainer)
-                        }
-
-                        // Create new items container
-                        val newItemsContainer = LinearLayout(this).apply {
-                            orientation = LinearLayout.VERTICAL
-                            tag = "items_${order.orderId}"
-                            setPadding(8, 8, 8, 8)
-                            setBackgroundColor(resources.getColor(android.R.color.white, theme))
-                        }
-
-                        // Add divider
-                        newItemsContainer.addView(View(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                1
-                            )
-                            setBackgroundColor(resources.getColor(R.color.text_secondary, theme))
-                        })
-
-                        // Add each item
-                        orderItems.forEach { item ->
-                            newItemsContainer.addView(LinearLayout(this).apply {
-                                orientation = LinearLayout.HORIZONTAL
-                                setPadding(0, 8, 0, 8)
-
-                                // Quantity
-                                addView(TextView(this@MainActivity).apply {
-                                    text = "${item.quantity}x"
-                                    textSize = 14f
-                                    setTypeface(null, Typeface.BOLD)
-                                    layoutParams = LinearLayout.LayoutParams(
-                                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                                        LinearLayout.LayoutParams.WRAP_CONTENT
-                                    ).apply {
-                                        marginEnd = 12
-                                    }
-                                })
-
-                                // Item name
-                                addView(TextView(this@MainActivity).apply {
-                                    text = item.itemName
-                                    textSize = 14f
-                                    layoutParams = LinearLayout.LayoutParams(
-                                        0,
-                                        LinearLayout.LayoutParams.WRAP_CONTENT,
-                                        1f
-                                    )
-                                })
-
-                                // Item subtotal
-                                addView(TextView(this@MainActivity).apply {
-                                    text = FormatUtils.formatPrice(item.pricePerUnit * item.quantity)
-                                    textSize = 14f
-                                    setTextColor(resources.getColor(R.color.accent_red, theme))
-                                })
-                            })
-                        }
-
-                        // Add divider
-                        newItemsContainer.addView(View(this).apply {
-                            layoutParams = LinearLayout.LayoutParams(
-                                LinearLayout.LayoutParams.MATCH_PARENT,
-                                1
-                            ).apply {
-                                setMargins(0, 8, 0, 8)
-                            }
-                            setBackgroundColor(resources.getColor(R.color.text_secondary, theme))
-                        })
-
-                        // Insert before total price and button
-                        val insertIndex = orderView.childCount - 2  // Before price and button
-                        orderView.addView(newItemsContainer, insertIndex)
-                    }
-
-                    // Total price
-                    orderView.addView(TextView(this).apply {
-                        text = "Total: ${FormatUtils.formatPrice(order.totalPrice)}"
                         textSize = 18f
                         setTypeface(null, Typeface.BOLD)
-                        setTextColor(resources.getColor(R.color.accent_red, theme))
-                        setPadding(0, 8, 0, 12)
                     })
 
-                    // Complete button
+                    orderView.addView(TextView(this).apply {
+                        text = FormatUtils.formatDateTime(order.timestamp)
+                        textSize = 12f
+                    })
+
+                    orderViewModel.getOrderItems(order.orderId)
+                        .observe(this) { items ->
+                            items.forEach { item ->
+                                orderView.addView(TextView(this).apply {
+                                    text = "${item.quantity}x ${item.itemName} - ${
+                                        FormatUtils.formatPrice(item.quantity * item.pricePerUnit)
+                                    }"
+                                })
+                            }
+                        }
+
+                    orderView.addView(TextView(this).apply {
+                        text = "Total: ${FormatUtils.formatPrice(order.totalPrice)}"
+                        setTypeface(null, Typeface.BOLD)
+                    })
+
                     orderView.addView(Button(this).apply {
                         text = "Complete Order"
-                        setBackgroundColor(resources.getColor(R.color.accent_green, theme))
-                        setTextColor(resources.getColor(R.color.white, theme))
                         setOnClickListener {
                             orderViewModel.completeOrder(order.orderId)
-                            Toast.makeText(this@MainActivity, "Order #${order.queueNumber} completed", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Order #${order.queueNumber} completed",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     })
 
@@ -1305,10 +1227,205 @@ class MainActivity : AppCompatActivity() {
         layout.addView(scrollView)
 
         AlertDialog.Builder(this)
-            .setCustomTitle(headerLayout)
+            .setTitle("Pending Orders")
             .setView(layout)
             .setPositiveButton("Close", null)
             .show()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showOrdersHistoryDialog() {
+
+        val header = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(24, 24, 24, 16)
+        }
+
+        val title = TextView(this).apply {
+            text = "Orders History"
+            textSize = 20f
+            setTypeface(null, Typeface.BOLD)
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+            )
+        }
+
+        val restoreButton = ImageButton(this).apply {
+            setImageResource(android.R.drawable.ic_menu_rotate) // ikon restore bawaan
+            setBackgroundColor(Color.TRANSPARENT)
+            contentDescription = "Restore orders history"
+
+
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = 24
+            }
+
+            setOnClickListener {
+                showRestoreOrdersDialog()
+            }
+        }
+
+        val deleteButton = ImageButton(this).apply {
+            setImageResource(android.R.drawable.ic_menu_delete)
+            setBackgroundColor(Color.TRANSPARENT)
+            contentDescription = "Delete orders history"
+            setOnClickListener {
+                showDeleteAllOrdersDialog()
+            }
+        }
+
+        header.addView(title)
+        header.addView(restoreButton)
+        header.addView(deleteButton)
+
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 24, 24, 24)
+        }
+
+        val revenueText = TextView(this).apply {
+            textSize = 18f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(resources.getColor(R.color.accent_green, theme))
+            setPadding(0, 0, 0, 16)
+        }
+
+        orderViewModel.totalRevenue.observe(this) { revenue ->
+            revenueText.text = "Total Revenue: ${FormatUtils.formatPrice(revenue)}"
+        }
+
+        val scrollView = ScrollView(this)
+        val ordersLayout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+
+        orderViewModel.completedOrders.observe(this) { orders ->
+            ordersLayout.removeAllViews()
+
+            if (orders.isEmpty()) {
+                ordersLayout.addView(TextView(this).apply {
+                    text = "No order history"
+                    textSize = 16f
+                })
+            } else {
+                orders.forEach { order ->
+                    ordersLayout.addView(TextView(this).apply {
+                        text =
+                            "Order ID: ${order.orderId} • ${
+                                FormatUtils.formatDateTime(order.timestamp)
+                            }\nTotal: ${FormatUtils.formatPrice(order.totalPrice)}"
+                        setPadding(0, 8, 0, 8)
+                    })
+                }
+            }
+        }
+
+        scrollView.addView(ordersLayout)
+
+        layout.addView(revenueText)
+        layout.addView(scrollView)
+
+        AlertDialog.Builder(this)
+            .setCustomTitle(header)
+            .setView(layout)
+            .setPositiveButton("Close", null)
+            .show()
+    }
+
+    /**
+     * Restore Order History from JSON
+     */
+    private fun showRestoreOrdersDialog() {
+        val filesDir = this.filesDir
+        // Assume a single, default backup file name.
+        val backupFile = File(filesDir, "orders_backup.json")
+
+        // If the backup file is not found, show a message and stop.
+        if (!backupFile.exists()) {
+            Toast.makeText(
+                this,
+                "File backup 'orders_backup.json' tidak ditemukan",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        // If the file exists, go directly to the confirmation dialog.
+        confirmRestoreOrders(backupFile)
+    }
+
+    private fun confirmRestoreOrders(file: File) {
+        AlertDialog.Builder(this)
+            .setTitle("Konfirmasi Restore")
+            .setMessage(
+                "Restore order history dari file:\n\n${file.name}\n\n" +
+                        "Semua data order saat ini akan diganti."
+            )
+            .setPositiveButton("Restore") { _, _ ->
+                restoreOrdersFromJson(file)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun restoreOrdersFromJson(backupFile: File) {
+        lifecycleScope.launch {
+            try {
+                // 2. Check if the PASSED file exists, instead of the hardcoded one.
+                if (!backupFile.exists()) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "${backupFile.name} tidak ditemukan", // Use the actual filename in the message
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+
+                // 3. Read the text from the PASSED file.
+                val json = withContext(Dispatchers.IO) {
+                    backupFile.readText()
+                }
+
+                val type = object : TypeToken<List<OrderEntity>>() {}.type
+                val orders: List<OrderEntity> =
+                    Gson().fromJson(json, type)
+
+                if (orders.isEmpty()) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "File backup kosong",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+
+                // 🔥 RESET + RESTORE
+                orderViewModel.deleteAllOrders()
+
+                orders.forEach { order ->
+                    orderViewModel.insertRestoredOrder(order)
+                }
+
+                Toast.makeText(
+                    this@MainActivity,
+                    "Berhasil restore ${orders.size} order dari ${backupFile.name}", // Improved success message
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Restore gagal: ${e.message}", // Show exception message for better debugging
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     /**

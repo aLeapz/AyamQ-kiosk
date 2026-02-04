@@ -46,7 +46,6 @@ interface OrderDao {
     @Query("SELECT * FROM orders WHERE status = :status ORDER BY timestamp DESC")
     fun getOrdersByStatus(status: String): LiveData<List<OrderEntity>>
 
-
     /**
      * Update order status
      * Convenient method for status changes without loading entire entity
@@ -75,10 +74,23 @@ interface OrderDao {
     @Query("SELECT * FROM orders ORDER BY timestamp DESC")
     suspend fun getAllOrdersOnce(): List<OrderEntity>
 
+    /**
+     * Get total revenue
+     * Used for view orders history
+     */
+    @Query("SELECT IFNULL(SUM(totalPrice), 0) FROM orders WHERE status = 'SELESAI'")
+    fun getTotalRevenue(): LiveData<Int>
+
+    /**
+     * Insert a new order
+     * Used for restoring orders
+     */
+    @Insert
+    suspend fun insertOrder(order: OrderEntity)
 
     /**
      * Delete all orders
-     * Used for backup and data export
+     * Used for deleting all the orders history in the database
      */
     @Query("DELETE FROM orders")
     suspend fun deleteAllOrders()

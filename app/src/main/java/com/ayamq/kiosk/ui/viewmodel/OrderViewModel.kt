@@ -30,17 +30,23 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     // LiveData for completed orders (SELESAI)
     val completedOrders: LiveData<List<OrderEntity>>
 
+    // Total Revenue
+    val totalRevenue: LiveData<Int>
+
     // Status for order creation
     private val _orderCreationStatus = MutableLiveData<OrderCreationResult?>()
     val orderCreationStatus: LiveData<OrderCreationResult?> = _orderCreationStatus
 
     init {
         val database = AppDatabase.getDatabase(application)
+        // 'repository' is initialized first
         repository = OrderRepository(database.orderDao(), database.orderItemDao())
 
+        // 2. Now, initialize the other properties that depend on the repository
         allOrders = repository.allOrders
         pendingOrders = repository.getOrdersByStatus("DIPROSES")
         completedOrders = repository.getOrdersByStatus("SELESAI")
+        totalRevenue = repository.totalRevenue
     }
 
     /**
@@ -98,13 +104,22 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         return repository.getOrderItems(orderId)
     }
 
-
     /**
      * Reset order creation status
      * Call this after handling the result
      */
     fun resetOrderCreationStatus() {
         _orderCreationStatus.value = null
+    }
+
+    /**
+     * Insert a restored order into the database
+     * @param order The order to be inserted
+     */
+    fun insertRestoredOrder(order: OrderEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insertOrder(order)
+        }
     }
 
     /**
@@ -117,7 +132,6 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
-
 
 /**
  * Sealed class representing order creation result

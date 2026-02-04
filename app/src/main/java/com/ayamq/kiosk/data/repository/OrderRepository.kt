@@ -31,6 +31,12 @@ class OrderRepository(
     }
 
     /**
+     * Get total revenue
+     * Used for view orders history
+     */
+    val totalRevenue: LiveData<Int> = orderDao.getTotalRevenue()
+
+    /**
      * Create a new order with items
      * This is a transaction - all or nothing
      * @param order The order entity
@@ -73,6 +79,15 @@ class OrderRepository(
      */
     fun getOrderItems(orderId: Int): LiveData<List<OrderItemEntity>> {
         return orderItemDao.getOrderItemsByOrderId(orderId)
+    }
+
+    /**
+     * Inserts a single pre-existing order entity into the database.
+     * Used for restoring from a backup.
+     * @param order The complete order entity to insert.
+     */
+    suspend fun insertOrder(order: OrderEntity) {
+        orderDao.insertOrder(order)
     }
 
     /**
