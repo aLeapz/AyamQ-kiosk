@@ -19,20 +19,6 @@ interface OrderDao {
     suspend fun insert(order: OrderEntity): Long
 
     /**
-     * Update an existing order
-     * Used primarily for status updates (DIPROSES -> SELESAI)
-     */
-    @Update
-    suspend fun update(order: OrderEntity)
-
-    /**
-     * Delete an order
-     * Will also delete all associated order items (CASCADE foreign key)
-     */
-    @Delete
-    suspend fun delete(order: OrderEntity)
-
-    /**
      * Get all orders ordered by timestamp (newest first)
      * Returns LiveData for automatic UI updates
      */
@@ -94,4 +80,11 @@ interface OrderDao {
      */
     @Query("DELETE FROM orders")
     suspend fun deleteAllOrders()
+
+    /**
+     * Reset the order ID sequence
+     * used for restoring orders
+     */
+    @Query("DELETE FROM sqlite_sequence WHERE name = 'orders'")
+    suspend fun resetOrderIdSequence()
 }

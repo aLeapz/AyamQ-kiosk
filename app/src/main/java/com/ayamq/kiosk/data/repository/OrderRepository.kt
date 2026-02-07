@@ -106,5 +106,6 @@ class OrderRepository(
      */
     suspend fun deleteAllOrders() {
         orderDao.deleteAllOrders()
+        orderDao.resetOrderIdSequence()
     }
 }
