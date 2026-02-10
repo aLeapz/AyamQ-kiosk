@@ -92,7 +92,7 @@ Aplikasi ini dikembangkan sebagai proyek akhir mata kuliah Pemrograman Bergerak 
 
 ## Demo Video
 
-[![Demo Aplikasi AyamQ](https://img.youtube.com/vi/oXRepvrc7EY/maxresdefault.jpg)](https://www.youtube.com/watch?v=Hr2BovUG0uw)
+[![Demo Aplikasi AyamQ](https://img.youtube.com/vi/Hr2BovUG0uw/maxresdefault.jpg)](https://www.youtube.com/watch?v=Hr2BovUG0uw)
 
 _Klik gambar di atas > menonton demo video aplikasi AyamQ Kiosk di YouTube untuk melihat fitur dan cara kerja aplikasi secara langsung._
 
